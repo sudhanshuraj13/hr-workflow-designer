@@ -135,9 +135,17 @@ export function SandboxPanel({ snapshot, issues, onImport }: SandboxPanelProps) 
                   <div className="flex items-center justify-between gap-3">
                     <div className="font-semibold text-slate-900">{entry.title}</div>
                     <div className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
-                      entry.status === "success" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                      entry.status === "success"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : entry.status === "waiting"
+                          ? "bg-amber-50 text-amber-700"
+                          : "bg-slate-100 text-slate-700"
                     }`}>
-                      {entry.status === "success" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+                      {entry.status === "success" ? (
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                      ) : (
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                      )}
                       {entry.status}
                     </div>
                   </div>

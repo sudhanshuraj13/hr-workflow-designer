@@ -77,11 +77,14 @@ export function DesignerShell() {
             <WorkflowCanvas
               nodes={workflow.nodes}
               edges={workflow.edges}
+              selectedEdge={workflow.selectedEdge}
               onNodesChange={workflow.onNodesChange}
               onEdgesChange={workflow.onEdgesChange}
               onConnect={workflow.onConnect}
               onNodeSelect={workflow.selectNode}
               onEdgeSelect={workflow.selectEdge}
+              onClearSelection={workflow.clearSelection}
+              onDeleteSelection={workflow.deleteSelection}
               onAddNode={workflow.addNode}
             />
             <SandboxPanel snapshot={workflow.serialize()} issues={workflow.issues} onImport={workflow.importSnapshot} />
@@ -89,6 +92,7 @@ export function DesignerShell() {
 
           <InspectorPanel
             selectedNode={workflow.selectedNode}
+            selectedEdge={workflow.selectedEdge}
             automations={automations}
             onDelete={workflow.deleteSelection}
             onUpdate={workflow.updateSelectedNodeData}

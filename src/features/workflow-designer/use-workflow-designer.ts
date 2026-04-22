@@ -16,6 +16,7 @@ import { createStarterWorkflow, createWorkflowNode, serializeWorkflow, validateW
 function annotateNodes(nodes: WorkflowNode[], issues: WorkflowValidationIssue[]) {
   return nodes.map((node) => ({
     ...node,
+    selected: false,
     data: {
       ...(node.data as WorkflowNodeData),
       validationMessages: issues.filter((issue) => issue.nodeId === node.id).map((issue) => issue.message)
@@ -30,10 +31,25 @@ export function useWorkflowDesigner() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(starter.nodes[1]?.id ?? null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const issues = useMemo(() => validateWorkflow(rawNodes, edges), [rawNodes, edges]);
-  const nodes = useMemo(() => annotateNodes(rawNodes, issues), [rawNodes, issues]);
+  const nodes = useMemo(
+    () =>
+      annotateNodes(rawNodes, issues).map((node) => ({
+        ...node,
+        selected: node.id === selectedNodeId
+      })),
+    [rawNodes, issues, selectedNodeId]
+  );
+  const decoratedEdges = useMemo(
+    () =>
+      edges.map((edge) => ({
+        ...edge,
+        selected: edge.id === selectedEdgeId
+      })),
+    [edges, selectedEdgeId]
+  );
 
   const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
-  const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId) ?? null;
+  const selectedEdge = decoratedEdges.find((edge) => edge.id === selectedEdgeId) ?? null;
 
   function onNodesChange(changes: NodeChange<WorkflowNode>[]) {
     setRawNodes((current) => applyNodeChanges(changes, current));
@@ -96,6 +112,11 @@ export function useWorkflowDesigner() {
     }
   }
 
+  function clearSelection() {
+    setSelectedNodeId(null);
+    setSelectedEdgeId(null);
+  }
+
   function resetToStarter() {
     const next = createStarterWorkflow();
     setRawNodes(next.nodes);
@@ -113,7 +134,7 @@ export function useWorkflowDesigner() {
 
   return {
     nodes,
-    edges,
+    edges: decoratedEdges,
     issues,
     selectedNode,
     selectedEdge,
@@ -123,10 +144,11 @@ export function useWorkflowDesigner() {
     onConnect,
     selectNode,
     selectEdge,
+    clearSelection,
     updateSelectedNodeData,
     deleteSelection,
     resetToStarter,
-    serialize: () => serializeWorkflow(nodes, edges),
+    serialize: () => serializeWorkflow(nodes, decoratedEdges),
     importSnapshot
   };
 }

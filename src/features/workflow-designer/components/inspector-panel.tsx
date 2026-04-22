@@ -6,6 +6,7 @@ import { Settings2, Trash2 } from "lucide-react";
 import type {
   AutomationDefinition,
   KeyValuePair,
+  WorkflowEdge,
   WorkflowNode,
   WorkflowNodeConfigMap
 } from "@/features/workflow-designer/types";
@@ -13,6 +14,7 @@ import { createKeyValuePair } from "@/features/workflow-designer/utils";
 
 type InspectorPanelProps = {
   selectedNode: WorkflowNode | null;
+  selectedEdge: WorkflowEdge | null;
   automations: AutomationDefinition[];
   onDelete: () => void;
   onUpdate: (updater: (node: WorkflowNode) => WorkflowNode) => void;
@@ -91,14 +93,50 @@ function KeyValueEditor({
   );
 }
 
-export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }: InspectorPanelProps) {
-  if (!selectedNode) {
+export function InspectorPanel({ selectedNode, selectedEdge, automations, onDelete, onUpdate }: InspectorPanelProps) {
+  if (!selectedNode && !selectedEdge) {
     return (
       <aside className="rounded-[28px] border border-slate-200 bg-white/90 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
-        <SectionTitle title="Inspector" subtitle="Pick a node on the canvas to edit its configuration." />
+        <SectionTitle title="Inspector" subtitle="Pick a node or connection on the canvas to edit or delete it." />
       </aside>
     );
   }
+
+  if (selectedEdge) {
+    return (
+      <aside className="rounded-[28px] border border-slate-200 bg-white/90 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+              <Settings2 className="h-3.5 w-3.5" />
+              Connection
+            </div>
+            <h3 className="mt-4 text-xl font-semibold text-slate-950">Edge controls</h3>
+          </div>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 transition hover:border-rose-300"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </button>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          <div>
+            <span className="font-semibold text-slate-900">From:</span> {selectedEdge.source}
+          </div>
+          <div className="mt-2">
+            <span className="font-semibold text-slate-900">To:</span> {selectedEdge.target}
+          </div>
+          <div className="mt-4 text-slate-600">Click Delete to remove the line between these nodes.</div>
+        </div>
+      </aside>
+    );
+  }
+
+  const activeNode = selectedNode!;
 
   return (
     <aside className="rounded-[28px] border border-slate-200 bg-white/90 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
@@ -106,7 +144,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
             <Settings2 className="h-3.5 w-3.5" />
-            {selectedNode.data.label}
+            {activeNode.data.label}
           </div>
           <h3 className="mt-4 text-xl font-semibold text-slate-950">Node configuration</h3>
         </div>
@@ -121,11 +159,11 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
       </div>
 
       <div className="mt-6 space-y-5">
-        {selectedNode.type === "start" ? (
+        {activeNode.type === "start" ? (
           <>
             <SectionTitle title="Start Node" subtitle="Capture how the workflow begins and any metadata the engine should carry forward." />
             <Input
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["start"]).title}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["start"]).title}
               onChange={(event) =>
                 onUpdate((node) => ({
                   ...node,
@@ -137,7 +175,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
               }
             />
             <KeyValueEditor
-              rows={(selectedNode.data.config as WorkflowNodeConfigMap["start"]).metadata}
+              rows={(activeNode.data.config as WorkflowNodeConfigMap["start"]).metadata}
               onChange={(rows) =>
                 onUpdate((node) => ({
                   ...node,
@@ -151,11 +189,11 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
           </>
         ) : null}
 
-        {selectedNode.type === "task" ? (
+        {activeNode.type === "task" ? (
           <>
             <SectionTitle title="Task Node" subtitle="Human tasks use a richer form with assignment, due date, and custom metadata." />
             <Input
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["task"]).title}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["task"]).title}
               onChange={(event) =>
                 onUpdate((node) => ({
                   ...node,
@@ -167,7 +205,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
               }
             />
             <TextArea
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["task"]).description}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["task"]).description}
               onChange={(event) =>
                 onUpdate((node) => ({
                   ...node,
@@ -180,7 +218,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
               placeholder="Describe what the assignee needs to do."
             />
             <Input
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["task"]).assignee}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["task"]).assignee}
               onChange={(event) =>
                 onUpdate((node) => ({
                   ...node,
@@ -194,7 +232,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
             />
             <Input
               type="date"
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["task"]).dueDate}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["task"]).dueDate}
               onChange={(event) =>
                 onUpdate((node) => ({
                   ...node,
@@ -206,7 +244,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
               }
             />
             <KeyValueEditor
-              rows={(selectedNode.data.config as WorkflowNodeConfigMap["task"]).customFields}
+              rows={(activeNode.data.config as WorkflowNodeConfigMap["task"]).customFields}
               onChange={(rows) =>
                 onUpdate((node) => ({
                   ...node,
@@ -220,11 +258,11 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
           </>
         ) : null}
 
-        {selectedNode.type === "approval" ? (
+        {activeNode.type === "approval" ? (
           <>
             <SectionTitle title="Approval Node" subtitle="Keep approval behavior explicit so the flow remains readable and easy to extend." />
             <Input
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["approval"]).title}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["approval"]).title}
               onChange={(event) =>
                 onUpdate((node) => ({
                   ...node,
@@ -236,7 +274,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
               }
             />
             <Input
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["approval"]).approverRole}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["approval"]).approverRole}
               onChange={(event) =>
                 onUpdate((node) => ({
                   ...node,
@@ -250,7 +288,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
             />
             <Input
               type="number"
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["approval"]).autoApproveThreshold}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["approval"]).autoApproveThreshold}
               onChange={(event) =>
                 onUpdate((node) => ({
                   ...node,
@@ -268,11 +306,11 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
           </>
         ) : null}
 
-        {selectedNode.type === "automation" ? (
+        {activeNode.type === "automation" ? (
           <>
             <SectionTitle title="Automated Step" subtitle="The action list is fetched from the mock API, and the parameter form adapts to the chosen action." />
             <Input
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["automation"]).title}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["automation"]).title}
               onChange={(event) =>
                 onUpdate((node) => ({
                   ...node,
@@ -284,7 +322,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
               }
             />
             <select
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["automation"]).actionId}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["automation"]).actionId}
               onChange={(event) => {
                 const action = automations.find((entry) => entry.id === event.target.value);
                 onUpdate((node) => ({
@@ -311,7 +349,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
             </select>
 
             {(() => {
-              const config = selectedNode.data.config as WorkflowNodeConfigMap["automation"];
+              const config = activeNode.data.config as WorkflowNodeConfigMap["automation"];
               const action = automations.find((entry) => entry.id === config.actionId);
               if (!action) {
                 return null;
@@ -347,11 +385,11 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
           </>
         ) : null}
 
-        {selectedNode.type === "end" ? (
+        {activeNode.type === "end" ? (
           <>
             <SectionTitle title="End Node" subtitle="Describe the completion state and whether the workflow should produce a summary." />
             <TextArea
-              value={(selectedNode.data.config as WorkflowNodeConfigMap["end"]).message}
+              value={(activeNode.data.config as WorkflowNodeConfigMap["end"]).message}
               onChange={(event) =>
                 onUpdate((node) => ({
                   ...node,
@@ -367,7 +405,7 @@ export function InspectorPanel({ selectedNode, automations, onDelete, onUpdate }
               Summary flag
               <input
                 type="checkbox"
-                checked={(selectedNode.data.config as WorkflowNodeConfigMap["end"]).summaryRequired}
+                checked={(activeNode.data.config as WorkflowNodeConfigMap["end"]).summaryRequired}
                 onChange={(event) =>
                   onUpdate((node) => ({
                     ...node,

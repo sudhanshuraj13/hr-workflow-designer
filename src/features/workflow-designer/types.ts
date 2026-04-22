@@ -82,7 +82,7 @@ export type SimulationLogEntry = {
   nodeId: string;
   title: string;
   detail: string;
-  status: "success" | "waiting";
+  status: "success" | "waiting" | "blocked";
 };
 
 export type SimulationResponse = {

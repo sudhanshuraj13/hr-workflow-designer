@@ -319,6 +319,7 @@ export function simulateWorkflow(
 
   const logs: SimulationLogEntry[] = [];
   const visited = new Set<string>();
+  const logged = new Set<string>();
   const queue = [startNode.id];
 
   while (queue.length > 0) {
@@ -341,6 +342,18 @@ export function simulateWorkflow(
       detail,
       status: node.type === "approval" ? "waiting" : "success"
     });
+    logged.add(node.id);
+
+    if (node.type === "approval") {
+      appendBlockedDescendants({
+        currentNodeId,
+        nextBySource,
+        snapshot,
+        logs,
+        logged
+      });
+      continue;
+    }
 
     for (const edge of nextBySource.get(currentNodeId) ?? []) {
       queue.push(edge.target);
@@ -348,6 +361,49 @@ export function simulateWorkflow(
   }
 
   return logs;
+}
+
+function appendBlockedDescendants({
+  currentNodeId,
+  nextBySource,
+  snapshot,
+  logs,
+  logged
+}: {
+  currentNodeId: string;
+  nextBySource: Map<string, WorkflowEdge[]>;
+  snapshot: WorkflowSnapshot;
+  logs: SimulationLogEntry[];
+  logged: Set<string>;
+}) {
+  const blockedQueue = (nextBySource.get(currentNodeId) ?? []).map((edge) => edge.target);
+  const seen = new Set<string>();
+
+  while (blockedQueue.length > 0) {
+    const blockedNodeId = blockedQueue.shift()!;
+    if (seen.has(blockedNodeId) || logged.has(blockedNodeId)) {
+      continue;
+    }
+
+    seen.add(blockedNodeId);
+    const blockedNode = snapshot.nodes.find((entry) => entry.id === blockedNodeId);
+    if (!blockedNode) {
+      continue;
+    }
+
+    logs.push({
+      id: `log_${logs.length + 1}`,
+      nodeId: blockedNode.id,
+      title: `${logs.length + 1}. ${blockedNode.data.label}`,
+      detail: `Blocked until the approval step before it is completed.`,
+      status: "blocked"
+    });
+    logged.add(blockedNode.id);
+
+    for (const edge of nextBySource.get(blockedNodeId) ?? []) {
+      blockedQueue.push(edge.target);
+    }
+  }
 }
 
 function buildSimulationDetail(node: WorkflowNode, automationCatalog: AutomationDefinition[]) {
