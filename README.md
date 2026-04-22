@@ -28,6 +28,9 @@ This project is a small HR workflow builder built with Next.js and React Flow. I
 ```text
 src/
   app/
+    globals.css
+    layout.tsx
+    page.tsx
     api/
       automations/
       simulate/
