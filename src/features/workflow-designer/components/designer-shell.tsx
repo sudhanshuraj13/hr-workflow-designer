@@ -14,17 +14,17 @@ const capabilityCards = [
   {
     icon: <Network className="h-5 w-5" />,
     title: "React Flow canvas",
-    description: "Custom nodes, edge management, drag-and-drop, deletion, and minimap support."
+    description: "Drag nodes in, connect them, and manage the workflow visually."
   },
   {
     icon: <Boxes className="h-5 w-5" />,
     title: "Configurable node forms",
-    description: "Each node type exposes a dedicated editor, including dynamic automation parameters."
+    description: "Each node type has its own form, including dynamic automation fields."
   },
   {
     icon: <ScanSearch className="h-5 w-5" />,
     title: "Mock API sandbox",
-    description: "Automations are fetched through the API layer and simulated through a separate endpoint."
+    description: "Available automations come from the API, and the flow can be tested in the sandbox."
   }
 ];
 
@@ -50,11 +50,10 @@ export function DesignerShell() {
                 HR Workflow Designer
               </div>
               <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight text-slate-950 md:text-6xl">
-                A submission-ready workflow builder for onboarding, approvals, and internal HR automation.
+                Build and test HR workflows on a visual canvas.
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
-                The prototype is structured around reusable canvas state, extensible node configuration forms, and a mock API
-                sandbox so reviewers can see both product thinking and implementation discipline.
+                Add steps, connect them, edit their settings, and run the current flow through a mock simulation to check how it behaves.
               </p>
             </div>
 

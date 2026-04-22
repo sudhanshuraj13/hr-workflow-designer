@@ -1,8 +1,8 @@
 # HR Workflow Designer
 
-A focused prototype for the Tredence Full Stack Engineering Intern case study. The app lets an HR admin visually build internal workflows, configure each node through type-specific forms, fetch mock automation actions, and run the current graph through a lightweight simulation sandbox.
+This project is a small HR workflow builder built with Next.js and React Flow. It lets an HR admin place steps on a canvas, connect them, configure each step, and run the workflow through a mock simulation.
 
-## What is included
+## Features
 
 - React Flow canvas with drag-and-drop node creation
 - Five custom node types: Start, Task, Approval, Automated Step, and End
@@ -12,7 +12,7 @@ A focused prototype for the Tredence Full Stack Engineering Intern case study. T
   - `POST /api/simulate`
 - Client-side validation for missing links, invalid Start/End placement, and cycles
 - Sandbox panel with serialized graph preview, import/export JSON, and execution logs
-- A starter onboarding workflow so the reviewer can test the app immediately
+- A starter onboarding workflow loaded by default
 
 ## Stack
 
@@ -50,34 +50,28 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Design notes
+## Notes
 
-### 1. Feature-first structure
+### Structure
 
-The workflow builder is grouped under `src/features/workflow-designer` so canvas behavior, node rendering, form handling, validation, and mock API concerns stay close together. This keeps the module easy to extend without spreading logic across unrelated folders.
+The workflow builder lives under `src/features/workflow-designer` so the canvas, node rendering, validation, and form logic stay in one place.
 
-### 2. Node modeling
+### Node data
 
-Each workflow node uses a strongly typed `config` object keyed by node type. That makes the inspector forms predictable and avoids loosely shaped state when new node types are added later.
+Each node has a typed `config` object based on its node type. That keeps the inspector logic straightforward and makes it easier to add more node types later.
 
-### 3. Validation and simulation
+### Validation and simulation
 
-Validation runs on the client to give immediate feedback and is repeated in `POST /api/simulate` so the sandbox reflects server-side behavior too. The simulation layer walks the graph from the Start node and produces a readable step log rather than trying to fake a full backend.
+Validation runs on the client for quick feedback and again inside `POST /api/simulate`. The simulator walks the graph from the Start node and returns a simple execution log.
 
-### 4. Product choices
+### Scope
 
-The prototype starts with a realistic onboarding flow so the reviewer sees a complete workflow on first load. I also added JSON import/export, minimap, and reset support because those features make the module easier to demonstrate in a short review session.
+This is intentionally a lightweight prototype, so there is no auth or persistence yet. The focus here is the workflow editing experience, validation, and simulation flow.
 
-## Assumptions
-
-- Only a lightweight prototype was required, so there is no persistence or authentication.
-- Workflows are treated as directed acyclic graphs for the sandbox experience.
-- Simulation is intentionally deterministic and text-based because the case study emphasizes architecture and reasoning over backend complexity.
-
-## What I would add next
+## Next improvements
 
 - Persist workflows to a backend or local storage
-- Inline node-level validation badges with richer severity states
+- Better inline validation on nodes and edges
 - Undo/redo history
 - Branch conditions for approval outcomes
 - Playwright coverage for graph editing and sandbox execution

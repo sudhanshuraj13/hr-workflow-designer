@@ -32,7 +32,7 @@ const paletteItems: Array<{
   {
     type: "automation",
     title: "Automated Step",
-    description: "A mock system action powered by the API layer.",
+    description: "A mock system action pulled from the API.",
     icon: <Bot className="h-4 w-4" />
   },
   {
@@ -57,7 +57,7 @@ export function PaletteSidebar({ onReset }: PaletteSidebarProps) {
         </div>
         <h2 className="mt-4 text-2xl font-semibold text-slate-950">Build the flow visually</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Drag any node onto the canvas, connect it, and tune its behavior from the inspector.
+          Drag a node onto the canvas, connect it, then edit its details in the panel on the right.
         </p>
       </div>
 
@@ -88,7 +88,7 @@ export function PaletteSidebar({ onReset }: PaletteSidebarProps) {
         onClick={onReset}
         className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-950"
       >
-        Reset to sample workflow
+        Reset sample flow
       </button>
     </aside>
   );
